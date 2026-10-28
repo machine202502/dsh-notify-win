@@ -1,3 +1,9 @@
+> **Fork note.** This is a fork of [Andyqwe44/dsh-notify-win](https://github.com/Andyqwe44/dsh-notify-win)
+> (MIT). Changes: a custom notification cue (kalimba) played by the helper through
+> `winmm!PlaySound`, the toast's own sound muted to avoid doubling, and an app-style icon.
+> Everything else — event handling, toasts, questions, click-to-focus, the taskbar flash —
+> is the original author's work. The original `LICENSE` is kept as is.
+
 # dsh-notify-win
 
 > DeepSeek Harness (DSH) Windows notification plugin — native toast + taskbar flash when a task finishes or your input is needed.

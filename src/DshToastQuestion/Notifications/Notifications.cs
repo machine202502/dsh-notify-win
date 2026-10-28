@@ -2,6 +2,31 @@ namespace DshToastQuestion;
 
 static partial class Program
 {
+
+    [System.Runtime.InteropServices.DllImport("winmm.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    static extern bool PlaySound(string name, IntPtr module, uint flags);
+
+    /// <summary>Play the system notification cue directly, independent of toast policy.</summary>
+    static void PlayNotificationSound()
+    {
+        if (!SoundEnabled) return;
+        string bundled = Path.Combine(AppContext.BaseDirectory, "notify.wav");
+        if (File.Exists(bundled))
+        {
+            PlaySound(bundled, IntPtr.Zero, 0x00020001);
+            return;
+        }
+        string media = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media");
+        foreach (string name in new[] { "Windows Notify System Generic.wav", "Windows Notify.wav", "notify.wav" })
+        {
+            string path = Path.Combine(media, name);
+            if (!File.Exists(path)) continue;
+            // SND_ASYNC | SND_FILENAME | SND_NODEFAULT
+            PlaySound(path, IntPtr.Zero, 0x00020001);
+            return;
+        }
+    }
+
     // ---------------------------------------------------------------------
     // Non-interactive notifications (done / compact / alert / notice /
     // approval). They are shown by this process so Activated and Dismissed are
@@ -17,6 +42,8 @@ static partial class Program
             return;
         }
 
+        PlayNotificationSound();
+
         string title = message.Title ?? "";
         string body = message.Body ?? "";
         string duration = string.Equals(message.Duration, "long", StringComparison.OrdinalIgnoreCase) ? "long" : "short";
@@ -31,7 +58,10 @@ static partial class Program
           .Append("\"><visual><binding template=\"ToastGeneric\">");
         sb.Append("<text>").Append(XmlEscape(title)).Append("</text>");
         sb.Append("<text>").Append(XmlEscape(body)).Append("</text>");
-        sb.Append("</binding></visual></toast>");
+        sb.Append("</binding></visual>");
+        // Explicit sound: without this element Windows may show the toast silently.
+        sb.Append("<audio silent=\"true\" />");
+        sb.Append("</toast>");
 
         try
         {

@@ -3,6 +3,8 @@ namespace DshToastQuestion;
 static partial class Program
 {
     const string Aumid = "DeepSeekHarness";
+    /// <summary>Play the system cue with every notification.</summary>
+    internal const bool SoundEnabled = true;
     const string QuestionGroup = "dsh-notify-q";
     const string AnswerGroup = "dsh-notify-a";
     const string NotifyGroup = "dsh-notify-n";
