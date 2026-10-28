@@ -52,6 +52,7 @@ static partial class Program
 
         // Set before --focus too: a cold toast click needs the same diagnostics.
         _logPath = GetArg(args, "--log");
+        NotifyWhenFocused = HasFlag(args, "--notify-focused");
 
         // Toast click / dsh-notify:// activation: focus an existing DSH window,
         // or launch the installed PWA when DSH is not running. No script host.

@@ -36,7 +36,7 @@ static partial class Program
     // ---------------------------------------------------------------------
     static void ShowNotification(InboundMessage message)
     {
-        if (TestDshWindowFocused())
+        if (!NotifyWhenFocused && TestDshWindowFocused())
         {
             Log("notify skipped: DSH is focused");
             return;
