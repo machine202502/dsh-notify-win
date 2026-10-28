@@ -8,12 +8,14 @@
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
     "./package.json": "./package.json",
-    "./icon": "./icon.svg"
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json"
   },
   "files": [
     "lib",
     "cordis.patch.yml",
-    "icon.svg"
+    "icon.svg",
+    "locale/*.json"
   ],
   "scripts": {
     "build": "node scripts/build-helper.mjs",

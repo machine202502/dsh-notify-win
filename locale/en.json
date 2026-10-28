@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Notify (win)",
+    "description": "Native Windows toast and taskbar flash when a DeepSeek Harness task finishes or needs your input"
+  }
+}
