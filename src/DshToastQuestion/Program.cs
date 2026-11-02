@@ -10,7 +10,7 @@ namespace DshToastQuestion;
 /// alive for the whole plugin lifetime. They speak newline-delimited JSON over
 /// the child's stdin/stdout:
 ///
-///   host -> helper  { "op": "notify" | "question" | "status" | "shutdown" | "ping", ... }
+///   host -> helper  { "op": "notify" | "sound" | "question" | "status" | "shutdown" | "ping", ... }
 ///   helper -> host  { "ev": "ready" | "answer" | "cancel" | "pong", ... }
 ///
 /// Lifecycle follows the host by construction: when DSH exits (the service
@@ -134,6 +134,10 @@ static partial class Program
         {
             case "notify":
                 ShowNotification(message);
+                break;
+            case "sound":
+                // Cue only: no toast, no flash, no focus gate.
+                PlayCue(message.Sound);
                 break;
             case "question":
                 StartFlow(message);

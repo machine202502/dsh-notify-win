@@ -23,6 +23,9 @@
 #                               answerPendingTimeoutMs: 30000
 #                               answerSpeechTimeoutMs: 90000
 #                               showProject: true
+#                               notifyWhenFocused: false
+#                               notifyOnTurnStart: true
+#                               startSoundFile: start.wav
 #                               notifyOnCancel: true
 #                               notifyOnError: true
 #                               includeErrorCode: true

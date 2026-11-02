@@ -67,6 +67,8 @@ static partial class Program
         public bool Approval { get; set; }
         public string? State { get; set; }
         public string? Detail { get; set; }
+        /// <summary>Cue file for the sound-only op, resolved next to the helper.</summary>
+        public string? Sound { get; set; }
         public string? Reason { get; set; }
         public string? Code { get; set; }
         public int? Retry { get; set; }

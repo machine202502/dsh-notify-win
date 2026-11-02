@@ -6,25 +6,53 @@ static partial class Program
     [System.Runtime.InteropServices.DllImport("winmm.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     static extern bool PlaySound(string name, IntPtr module, uint flags);
 
-    /// <summary>Play the system notification cue directly, independent of toast policy.</summary>
-    static void PlayNotificationSound()
+    /// <summary>SND_ASYNC | SND_FILENAME | SND_NODEFAULT: play the file, never beep, never block.</summary>
+    const uint SoundFlags = 0x00020001;
+
+    /// <summary>
+    /// Resolve a cue that sits next to the helper: the requested file when it
+    /// exists, else the bundled notify.wav, else the first matching Windows
+    /// system cue. An empty string means nothing playable was found.
+    /// </summary>
+    static string ResolveCue(string? name)
+    {
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            // Only a bare file name is honoured: a host-supplied string must
+            // never become an arbitrary path the helper would play.
+            string requested = Path.Combine(AppContext.BaseDirectory, Path.GetFileName(name!));
+            if (File.Exists(requested)) return requested;
+        }
+        string bundled = Path.Combine(AppContext.BaseDirectory, "notify.wav");
+        if (File.Exists(bundled)) return bundled;
+        string media = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media");
+        foreach (string candidate in new[] { "Windows Notify System Generic.wav", "Windows Notify.wav", "notify.wav" })
+        {
+            string path = Path.Combine(media, candidate);
+            if (File.Exists(path)) return path;
+        }
+        return "";
+    }
+
+    /// <summary>Play the notification cue (bundled notify.wav) for a toast.</summary>
+    static void PlayNotificationSound() => PlayCue(null);
+
+    /// <summary>
+    /// Play one cue file and nothing else — the "sound only" op. No toast, no
+    /// taskbar flash and no focus gate: the host decides when a cue is wanted,
+    /// so the cue must not depend on which window happens to be in front.
+    /// </summary>
+    static void PlayCue(string? name)
     {
         if (!SoundEnabled) return;
-        string bundled = Path.Combine(AppContext.BaseDirectory, "notify.wav");
-        if (File.Exists(bundled))
+        string path = ResolveCue(name);
+        if (path.Length == 0)
         {
-            PlaySound(bundled, IntPtr.Zero, 0x00020001);
+            Log("cue unavailable: " + (name ?? "notify.wav"));
             return;
         }
-        string media = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Media");
-        foreach (string name in new[] { "Windows Notify System Generic.wav", "Windows Notify.wav", "notify.wav" })
-        {
-            string path = Path.Combine(media, name);
-            if (!File.Exists(path)) continue;
-            // SND_ASYNC | SND_FILENAME | SND_NODEFAULT
-            PlaySound(path, IntPtr.Zero, 0x00020001);
-            return;
-        }
+        PlaySound(path, IntPtr.Zero, SoundFlags);
+        Log("cue: " + Path.GetFileName(path));
     }
 
     // ---------------------------------------------------------------------

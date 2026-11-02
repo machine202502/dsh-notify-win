@@ -12,6 +12,9 @@ turn finishes, fails, or needs your input.
 - **Custom notification cue** — `lib/notify.wav` (kalimba) is played by the resident helper
   through `winmm!PlaySound`, so the toast keeps the system look but gets our sound.
 - **No doubled sound** — the toast's own `<audio>` is muted; only the bundled cue plays.
+- **Turn-start cue** — `lib/start.wav` (a double bell strike) plays when the agent picks
+  a turn up. It is a sound-only notice: the helper's `sound` op plays the cue and creates
+  no toast, so it does not depend on the toast focus policy and never arms the taskbar flash.
 - **App-style icon** — `icon.svg` in the plugin palette; the helper registers it for the
   AppUserModelID.
 - **Prebuilt helper in the package** — `lib/dsh-toast-question.exe` is committed and shipped,
@@ -57,20 +60,26 @@ Override any of these in the profile `cordis.patch.yml` under `- id: dsh-notify-
     approvalToastDuration: long
     answerPendingTimeoutMs: 30000
     showProject: true
+    notifyWhenFocused: true
+    notifyOnTurnStart: true
+    startSoundFile: start.wav
     notifyOnCancel: true
     notifyOnError: true
     includeErrorCode: true
     helperLog: ''
 ```
 
-`notifyOnCancel`, `notifyOnError`, `showProject`, `includeErrorCode` and the `*Title`/`*Body`
-strings are optional; defaults live in `lib/index.js`.
+`notifyWhenFocused`, `notifyOnTurnStart`, `notifyOnCancel`, `notifyOnError`, `showProject`,
+`includeErrorCode` and the `*Title`/`*Body` strings are optional; defaults live in
+`lib/index.js`.
 
 ## Sound
 
-The cue is `lib/notify.wav` next to the helper: ~0.72 s, mono, 44.1 kHz, −13 dBFS with a
-smooth tail. Replace the file to change the sound; the helper prefers it over the system
-sound and falls back to the system sound when missing.
+The toast cue is `lib/notify.wav` next to the helper: ~0.72 s, mono, 44.1 kHz, −13 dBFS with
+a smooth tail. The turn-start cue is `lib/start.wav`: two struck A5 bells 0.22 s apart with a
+~1.2 s tail, so the start of a turn is unmistakably different from the completion cue. Both
+are resolved next to the helper: replace a file to change the sound, or point `startSoundFile`
+at another bundled cue. A missing file falls back to the system notification sound.
 
 ## Build
 

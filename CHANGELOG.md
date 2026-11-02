@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Turn-start cue.** A second bundled cue (`lib/start.wav`, two struck A5 bells
+  0.22 s apart) plays when the agent starts working on a turn. It uses a new helper op
+  (`{"op":"sound","sound":"start.wav"}`) that plays the cue and nothing else:
+  no toast, no taskbar flash and no focus gate, so the start of a turn is
+  audible even while DSH is in the foreground and stays distinct from the
+  completion cue. Configure with `notifyOnTurnStart` (default `true`) and
+  `startSoundFile` (default `start.wav`); root sessions only, one cue per turn.
+
 ### Changed
 
 - **One .NET notification implementation.** Every toast — done / compact /
