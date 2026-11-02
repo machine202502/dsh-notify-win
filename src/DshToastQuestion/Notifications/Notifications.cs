@@ -48,8 +48,29 @@ static partial class Program
     {
         foreach (string path in CueQueue.GetConsumingEnumerable())
         {
-            Log("cue: " + Path.GetFileName(path));
+            string name = Path.GetFileName(path);
+            long expected = ExpectedCueMs(path);
+            Log($"cue: {name} (~{expected} ms, pending {CueQueue.Count})");
+            var clock = Stopwatch.StartNew();
             PlaySound(path, IntPtr.Zero, SoundFlagsSync);
+            clock.Stop();
+            // A trimmed playback is the diagnostic that matters: SND_SYNC must
+            // run roughly as long as the file, otherwise something stopped it.
+            Log($"cue end: {name} after {clock.ElapsedMilliseconds} ms");
+        }
+    }
+
+    /// <summary>Rough length of a 44.1 kHz mono 16-bit wav in ms, for diagnostics.</summary>
+    static long ExpectedCueMs(string path)
+    {
+        try
+        {
+            long bytes = new FileInfo(path).Length - 44;
+            return bytes <= 0 ? 0 : (long)Math.Round(bytes / 88200.0 * 1000);
+        }
+        catch
+        {
+            return 0;
         }
     }
 
