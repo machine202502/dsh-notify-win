@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace DshToastQuestion;
 
 static partial class Program
@@ -6,8 +8,56 @@ static partial class Program
     [System.Runtime.InteropServices.DllImport("winmm.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
     static extern bool PlaySound(string name, IntPtr module, uint flags);
 
-    /// <summary>SND_ASYNC | SND_FILENAME | SND_NODEFAULT: play the file, never beep, never block.</summary>
+    /// <summary>SND_ASYNC | SND_FILENAME | SND_NODEFAULT: fire and forget.</summary>
     const uint SoundFlags = 0x00020001;
+
+    /// <summary>SND_SYNC | SND_FILENAME | SND_NODEFAULT, played from the cue thread.</summary>
+    const uint SoundFlagsSync = 0x00020002;
+
+    /// <summary>
+    /// Cues waiting to be played. winmm's PlaySound owns ONE playback channel per
+    /// process, so a second call cuts the first short. A completion cue and a
+    /// turn-start cue arriving together therefore truncated each other; every cue
+    /// is queued here instead and played to its end by one worker thread.
+    /// </summary>
+    static readonly BlockingCollection<string> CueQueue = new(new ConcurrentQueue<string>(), 8);
+    static readonly object CueThreadLock = new();
+    static Thread? _cueThread;
+
+    /// <summary>Queue one resolved cue file; the worker plays them strictly in order.</summary>
+    static void EnqueueCue(string path)
+    {
+        lock (CueThreadLock)
+        {
+            if (_cueThread is null || !_cueThread.IsAlive)
+            {
+                _cueThread = new Thread(CueLoop) { IsBackground = true, Name = "dsh-cue-queue" };
+                _cueThread.Start();
+            }
+        }
+        if (!CueQueue.TryAdd(path))
+        {
+            // A burst of turns must not become a long jingle: drop the newcomer
+            // instead of delaying everything already queued behind it.
+            Log("cue dropped (queue full): " + Path.GetFileName(path));
+        }
+    }
+
+    /// <summary>Play queued cues one by one, each to its own end.</summary>
+    static void CueLoop()
+    {
+        foreach (string path in CueQueue.GetConsumingEnumerable())
+        {
+            Log("cue: " + Path.GetFileName(path));
+            PlaySound(path, IntPtr.Zero, SoundFlagsSync);
+        }
+    }
+
+    /// <summary>Let the cue thread drain and stop once the helper is going away.</summary>
+    static void StopCues()
+    {
+        try { CueQueue.CompleteAdding(); } catch { }
+    }
 
     /// <summary>
     /// Resolve a cue that sits next to the helper: the requested file when it
@@ -41,6 +91,7 @@ static partial class Program
     /// Play one cue file and nothing else — the "sound only" op. No toast, no
     /// taskbar flash and no focus gate: the host decides when a cue is wanted,
     /// so the cue must not depend on which window happens to be in front.
+    /// The file is queued, never played directly, so it cannot cut a cue short.
     /// </summary>
     static void PlayCue(string? name)
     {
@@ -51,8 +102,7 @@ static partial class Program
             Log("cue unavailable: " + (name ?? "notify.wav"));
             return;
         }
-        PlaySound(path, IntPtr.Zero, SoundFlags);
-        Log("cue: " + Path.GetFileName(path));
+        EnqueueCue(path);
     }
 
     // ---------------------------------------------------------------------

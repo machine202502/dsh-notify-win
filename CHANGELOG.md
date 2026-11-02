@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Cues no longer truncate each other.** `winmm!PlaySound` owns one playback
+  channel per process, so a turn-start cue arriving right after a completion cue
+  cut the completion cue short (it started 52 ms in and was replaced). Every cue
+  is now queued and played to its own end by a single worker thread
+  (`SND_SYNC`); a burst is capped at eight pending cues.
+
 ### Added
 
 - **Turn-start cue.** A second bundled cue (`lib/start.wav`, two struck A5 bells

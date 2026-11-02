@@ -120,6 +120,7 @@ static partial class Program
         // The host is gone (EOF) or asked us to stop: clear live toasts and
         // make sure the shell is not left flashing for a notification nobody
         // owns anymore.
+        StopCues();
         CleanupToasts();
         Log("helper exit");
         return 0;
