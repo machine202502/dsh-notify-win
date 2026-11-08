@@ -50,6 +50,10 @@ export function createFakeHelper() {
 /**
  * Plugin harness for the host tests: no PowerShell, no real helper exe.
  * The fake helper emits `ready` on the next tick and records every op.
+ *
+ * `language: 'zh'` is pinned by default so the text assertions in the suites
+ * keep checking the historical Chinese set on any machine locale; language
+ * resolution itself is covered by test/language.mjs, which overrides it.
  */
 export function createHarness(plugin, config = {}) {
   const routes = new Map()
@@ -92,7 +96,7 @@ export function createHarness(plugin, config = {}) {
     },
   }
 
-  plugin.apply(ctx, { dedupMs: 0, ...config })
+  plugin.apply(ctx, { dedupMs: 0, language: 'zh', ...config })
 
   return {
     routes,

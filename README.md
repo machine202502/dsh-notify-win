@@ -50,6 +50,7 @@ Override any of these in the profile `cordis.patch.yml` under `- id: dsh-notify-
 ```yaml
 - id: dsh-notify-win
   config:
+    language: auto                 # auto | ru | en | zh
     doneTitle: 'Turn finished'
     doneBody: '…'
     questionTitle: 'Input needed'
@@ -70,8 +71,37 @@ Override any of these in the profile `cordis.patch.yml` under `- id: dsh-notify-
 ```
 
 `notifyWhenFocused`, `notifyOnTurnStart`, `notifyOnCancel`, `notifyOnError`, `showProject`,
-`includeErrorCode` and the `*Title`/`*Body` strings are optional; defaults live in
+`includeErrorCode`, `language` and the `*Title`/`*Body` strings are optional; defaults live in
 `lib/index.js`.
+
+## Languages / Языки
+
+The default toast texts ship in three languages: **ru**, **en** and **zh**. That covers every
+title and body (done, compact, question, ask, cancelled, hook-cancelled, max-tokens, blocked,
+error, unknown stop, compaction failure), plus the error hints, the failure-code suffix and the
+retry suffixes.
+
+```yaml
+- id: dsh-notify-win
+  config:
+    language: auto   # auto | ru | en | zh
+```
+
+`language: auto` (the default) follows the system locale: `Intl.DateTimeFormat()` first, then
+`LC_ALL` / `LANG`, and English when neither is usable. A locale starting with `ru` or `zh`
+selects that set; everything else is English. An explicit `ru`, `en` or `zh` wins over the
+system locale.
+
+Any text can still be overridden per key in the profile config, and such an override always
+beats the language table:
+
+```yaml
+- id: dsh-notify-win
+  config:
+    language: en
+    doneTitle: 'Turn finished'
+    maxTokensBody: 'Hit the output ceiling — send "continue" to carry on.'
+```
 
 ## Sound
 
@@ -94,7 +124,7 @@ Requires `dotnet` on PATH (or `DOTNET` pointing at the SDK).
 ## Tests
 
 ```bash
-npm test        # flash policy, smoke, proof, helper protocol
+npm test        # flash policy, smoke, proof, language, helper protocol
 ```
 
 ## License

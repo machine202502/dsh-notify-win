@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "通知 (win)",
+    "description": "当 DeepSeek Harness 任务完成或需要你输入时，显示 Windows 原生通知并闪烁任务栏"
+  }
+}
