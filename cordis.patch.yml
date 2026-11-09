@@ -38,4 +38,4 @@
 #                               cancelledBody: ...
 - insert:
     - id: dsh-notify-win
-      name: dsh-notify-win
+      name: '@machine202502/dsh-notify-win'

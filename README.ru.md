@@ -38,9 +38,9 @@
 ```json
 {
   "dependencies": {
-    "dsh-notify-win": "github:machine202502/dsh-notify-win#main"
+    "@machine202502/dsh-notify-win": "0.5.3-fork.1"
   },
-  "dsh": { "profile": { "bundles": ["…", "dsh-notify-win"] } }
+  "dsh": { "profile": { "bundles": ["…", "@machine202502/dsh-notify-win"] } }
 }
 ```
 
